@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:recipe/features/favorites/controllers/favorite_controller.dart';
-import 'package:recipe/features/favorites/screens/favorites_screen.dart';
 import 'package:recipe/features/home/controllers/home_controller.dart';
 import 'package:recipe/features/recipe_details/controllers/recipe_details_controller.dart';
 import 'package:recipe/features/recipe_details/screens/recipe_details_screen.dart';
+import 'package:recipe/utils/widgets/recipe_card.dart';
 
 class HomeScreen extends GetView<HomeController> {
   const HomeScreen({super.key});
@@ -19,14 +19,6 @@ class HomeScreen extends GetView<HomeController> {
         centerTitle: true,
         elevation: 0,
         scrolledUnderElevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () {
-              Get.to(() => const FavoritesScreen());
-            },
-            icon: const Icon(Icons.favorite, color: Colors.red),
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
@@ -125,115 +117,23 @@ class HomeScreen extends GetView<HomeController> {
                   ),
                   itemBuilder: (context, index) {
                     final recipe = controller.recipes[index];
-
-                    return Card(
-                      clipBehavior: Clip.antiAlias,
-                      elevation: 2,
-                      child: InkWell(
+                    return Obx(
+                      () => RecipeCard(
+                        recipe: recipe,
+                        isFavorite: _favoriteController.isFavorite(recipe.id),
                         onTap: () {
-                          final detailedontroller =
+                          final detailsController =
                               Get.find<RecipeDetailsController>();
-
-                          detailedontroller.loadRecipe(recipe.id);
-
+                          detailsController.loadRecipe(recipe.id);
                           Get.to(() => const RecipeDetailsScreen());
                         },
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Stack(
-                                children: [
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: Image.network(
-                                      recipe.imageUrl,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                            return const Center(
-                                              child: Icon(
-                                                Icons.restaurant,
-                                                size: 40,
-                                              ),
-                                            );
-                                          },
-                                    ),
-                                  ),
-
-                                  Positioned(
-                                    top: 8,
-                                    right: 8,
-                                    child: Obx(() {
-                                      final isFavorite = _favoriteController
-                                          .isFavorite(recipe.id);
-
-                                      return IconButton(
-                                        onPressed: () {
-                                          if (isFavorite) {
-                                            _favoriteController.removeFavorite(
-                                              recipe.id,
-                                            );
-                                          } else {
-                                            _favoriteController.addFavorite(
-                                              recipe,
-                                            );
-                                          }
-                                        },
-                                        icon: Icon(
-                                          isFavorite
-                                              ? Icons.favorite
-                                              : Icons.favorite_border,
-                                          color: isFavorite
-                                              ? Colors.red
-                                              : Colors.white,
-                                        ),
-                                      );
-                                    }),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    recipe.name,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  SizedBox(height: 5),
-                                  Text(
-                                    recipe.category,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                  SizedBox(height: 3),
-                                  Text(
-                                    recipe.area,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                        onFavoriteTap: () {
+                          if (_favoriteController.isFavorite(recipe.id)) {
+                            _favoriteController.removeFavorite(recipe.id);
+                          } else {
+                            _favoriteController.addFavorite(recipe);
+                          }
+                        },
                       ),
                     );
                   },
